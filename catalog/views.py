@@ -4,11 +4,11 @@ from .models import Product
 
 def home(request):
     products = Product.objects.all()
-    return render(request, 'home.html', {'products': products})
+    return render(request, 'catalog/home.html', {'products': products})
 
 
 def contacts(request):
-    return render(request, 'contacts.html')
+    return render(request, 'catalog/contacts.html')
 
 
 def product_detail(request, product_id):
