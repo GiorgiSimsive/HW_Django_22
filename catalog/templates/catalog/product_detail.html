@@ -7,6 +7,7 @@
     <p><strong>Описание:</strong> {{ product.description|linebreaks }}</p>
     <p><strong>Цена:</strong> {{ product.price }} ₽</p>
     <p><strong>Категория:</strong> {{ product.category.name }}</p>
+    <p><strong>Статус публикации:</strong> {{ product.get_publication_status_display }}</p>
     <p><strong>Дата создания:</strong> {{ product.created_at|date:"d.m.Y H:i" }}</p>
     <p><strong>Дата последнего изменения:</strong> {{ product.updated_at|date:"d.m.Y H:i" }}</p>
 
@@ -15,4 +16,26 @@
     {% else %}
         <p>Изображение отсутствует</p>
     {% endif %}
+
+    <hr>
+
+    {% if user == product.owner %}
+        <a href="{% url 'catalog:product_update' product.pk %}">Редактировать</a>
+    {% endif %}
+
+    {% if perms.catalog.can_unpublish_product %}
+        <form method="post" action="{% url 'catalog:unpublish_product' product.pk %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit">Снять с публикации</button>
+        </form>
+    {% endif %}
+
+    {% if user == product.owner or perms.catalog.delete_product %}
+        <form method="post" action="{% url 'catalog:delete_product' product.pk %}" style="display:inline;" onsubmit="return confirm('Вы уверены, что хотите удалить этот продукт?');">
+            {% csrf_token %}
+            <button type="submit" style="color:red;">Удалить</button>
+        </form>
+    {% endif %}
+
+    <p><a href="{% url 'catalog:home' %}">← Назад к списку товаров</a></p>
 {% endblock %}
