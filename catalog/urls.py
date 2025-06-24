@@ -2,7 +2,7 @@ from django.urls import path
 from catalog.apps import NewappConfig
 from catalog.views import (
     HomeView, ContactsView, ProductDetailView,
-    ProductCreateView, ProductUpdateView, ProductDeleteView, UnpublishProductView, delete_product
+    ProductCreateView, ProductUpdateView, ProductDeleteView, UnpublishProductView
 )
 
 app_name = NewappConfig.name
@@ -17,5 +17,4 @@ urlpatterns = [
     path('product/<int:pk>/delete/', ProductDeleteView.as_view(), name='product_delete'),
 
     path('product/<int:pk>/unpublish/', UnpublishProductView.as_view(), name='unpublish_product'),
-    path('product/<int:pk>/delete_hard/', delete_product, name='delete_product'),
 ]

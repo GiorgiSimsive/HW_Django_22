@@ -9,7 +9,7 @@ from django.views import View
 from django.core.exceptions import PermissionDenied
 
 
-class UnpublishProductView(PermissionRequiredMixin, View):
+class UnpublishProductView(LoginRequiredMixin, PermissionRequiredMixin, View):
     permission_required = 'catalog.can_unpublish_product'
 
     def post(self, request, pk):
@@ -17,18 +17,6 @@ class UnpublishProductView(PermissionRequiredMixin, View):
         product.publication_status = 'draft'
         product.save()
         return redirect('catalog:product_detail', pk=product.pk)
-
-
-@permission_required('catalog.delete_product')
-def delete_product(request, pk):
-    product = get_object_or_404(Product, pk=pk)
-    user = request.user
-
-    if product.owner == user or user.has_perm('catalog.delete_product'):
-        product.delete()
-        return redirect('catalog:home')
-
-    raise PermissionDenied("У вас нет прав для удаления этого продукта.")
 
 
 class ProductCreateView(LoginRequiredMixin, CreateView):

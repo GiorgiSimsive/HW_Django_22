@@ -15,6 +15,10 @@ class Category(models.Model):
 
 
 class Product(models.Model):
+    STATUS_CHOICES = [
+        ('draft', 'Черновик'),
+        ('published', 'Опубликован'),
+    ]
     name = models.CharField(max_length=150, verbose_name='наименование', help_text='Введите наименование товара')
     description = models.TextField(blank=True, verbose_name='Описание')
     image = models.ImageField(upload_to='catalog/image', blank=True, null=True, verbose_name='изображение')
@@ -30,6 +34,13 @@ class Product(models.Model):
         verbose_name='Владелец',
         null=True,
         blank=True,
+    )
+
+    publication_status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default='draft',
+        verbose_name='Статус публикации'
     )
 
     class Meta:
