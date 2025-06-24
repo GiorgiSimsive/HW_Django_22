@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 
 
 class Category(models.Model):
@@ -14,6 +15,10 @@ class Category(models.Model):
 
 
 class Product(models.Model):
+    STATUS_CHOICES = [
+        ('draft', 'Черновик'),
+        ('published', 'Опубликован'),
+    ]
     name = models.CharField(max_length=150, verbose_name='наименование', help_text='Введите наименование товара')
     description = models.TextField(blank=True, verbose_name='Описание')
     image = models.ImageField(upload_to='catalog/image', blank=True, null=True, verbose_name='изображение')
@@ -22,9 +27,28 @@ class Product(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='дата создания')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='дата последнего изменения')
 
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='products',
+        verbose_name='Владелец',
+        null=True,
+        blank=True,
+    )
+
+    publication_status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default='draft',
+        verbose_name='Статус публикации'
+    )
+
     class Meta:
         verbose_name = 'Товар'
         verbose_name_plural = 'Товары'
+        permissions = [
+            ("can_unpublish_product", "can unpublish product"),
+        ]
 
     def __str__(self):
         return self.name
