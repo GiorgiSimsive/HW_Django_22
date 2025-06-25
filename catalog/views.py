@@ -2,11 +2,14 @@ from django.urls import reverse_lazy
 from django.views.generic import CreateView, UpdateView, DeleteView, TemplateView, DetailView, ListView
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from .forms import ProductForm
-from .models import Product
+from .models import Product, Category
 from django.shortcuts import get_object_or_404, redirect
-from django.contrib.auth.decorators import permission_required
 from django.views import View
 from django.core.exceptions import PermissionDenied
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
+from .services import get_products_by_category
+from django.core.cache import cache
 
 
 class UnpublishProductView(LoginRequiredMixin, PermissionRequiredMixin, View):
@@ -41,6 +44,7 @@ class ProductUpdateView(LoginRequiredMixin, UpdateView):
         return Product.objects.filter(owner=self.request.user)
 
 
+@method_decorator(cache_page(60 * 5), name='dispatch')
 class ProductDeleteView(LoginRequiredMixin, DeleteView):
     model = Product
     template_name = 'catalog/product_confirm_delete.html'
@@ -60,6 +64,14 @@ class HomeView(ListView):
     template_name = 'catalog/home.html'
     context_object_name = 'products'
 
+    def get_queryset(self):
+        cache_key = 'all_products_list'
+        products = cache.get(cache_key)
+        if products is None:
+            products = Product.objects.all()
+            cache.set(cache_key, products, timeout=60 * 15)
+        return products
+
 
 class ContactsView(TemplateView):
     template_name = 'catalog/contacts.html'
@@ -70,3 +82,16 @@ class ProductDetailView(LoginRequiredMixin, DetailView):
     template_name = 'catalog/product_detail.html'
     context_object_name = 'product'
     pk_url_kwarg = 'pk'
+
+
+class CategoryProductListView(ListView):
+    template_name = 'catalog/category_products.html'
+    context_object_name = 'products'
+
+    def get_queryset(self):
+        return get_products_by_category(self.kwargs['category_id'])
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['category'] = Category.objects.get(pk=self.kwargs['category_id'])
+        return context
