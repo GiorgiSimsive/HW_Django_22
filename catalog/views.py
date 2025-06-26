@@ -44,7 +44,6 @@ class ProductUpdateView(LoginRequiredMixin, UpdateView):
         return Product.objects.filter(owner=self.request.user)
 
 
-@method_decorator(cache_page(60 * 5), name='dispatch')
 class ProductDeleteView(LoginRequiredMixin, DeleteView):
     model = Product
     template_name = 'catalog/product_confirm_delete.html'
@@ -77,6 +76,7 @@ class ContactsView(TemplateView):
     template_name = 'catalog/contacts.html'
 
 
+@method_decorator(cache_page(60 * 5), name='dispatch')
 class ProductDetailView(LoginRequiredMixin, DetailView):
     model = Product
     template_name = 'catalog/product_detail.html'
